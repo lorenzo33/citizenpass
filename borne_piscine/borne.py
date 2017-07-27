@@ -1,88 +1,83 @@
-# -*- coding: utf-8 -*-
-#!/usr/bin/python
+# -*- coding:utf-8 -*-
 
-#-------------------------------------------------------------------------------
-# Nom :        Borne
-# Objet:       Programme de lecture des cartes RFID et d'affichage des accès 
+###################################################################
 #
-# Auteur:      Laurent DELAPLACE
+# Nom du fichier : borne.py
 #
-# Creation:    18/07/2017
-# Copyright:   (c) ACIFOP 2017
-# Licence:
-#-------------------------------------------------------------------------------
+# Contenu : contient le programme principal pour gérer les bornes
+# d'accès au service
+#
+# Developpeur : DELAPLACE Laurent 
+#
+# Date de création : 26/07/2017
+#
+###################################################################
 
-# Définition des données à importer
-import display
-import nfc
+# Importation des modules
+#from access_file import AccessFile
+from MFRC522 import *
+import access_file
+import time
 import logging
 
-import thread
-import threading
-import time
+#Activation des logs de débuggage
+DEBUG=True
+#Activation de l'affichage standard
+VERBOSE=False
 
-import RPi.GPIO as GPIO
-
-class Borne(threadin.Thread):
-
-    # Initialisation des variables
-    DEBUG = True
-    VERBOSE = True
-
-    if(self.DEBUG):
-        logging.basicConfig(format='%(asctime)s %(message)s', filename='borne.log', level=logging.DEBUG)
-
-    def __init__(self):
-
-    	global displayTime, Message
-    	self.displayTime = True
-	self.lcd = display.LcdDisplay() 	    
-
-
-
+if(DEBUG):
+    logging.basicConfig(format='%(asctime)s %(message)s',filename='borne.log', level=logging.DEBUG)
 
 def debug(message):
-        logging.debug(message)
+    logging.debug(message)
 
-    def onScreen(message):
-        if(VERBOSE):
-            print(message)
+def onScreen(message):
+    if(VERBOSE):
+        print(message)
 
-    def printDateToDisplay():
-        while True:
-            if displayTime!=True:
-                thread.exit()
-        	lcd.lcdWriteFirstLine(time.strftime("%d/%m/%Y %H:%M:%S", time.localtime()))
-		lcd.lcdWriteSecondLine(Message)
-        	time.sleep(1)
-		lcd.Clear()
+def ReadNFC():
+    reading = True
+    while reading:
+	#Création d'une instance pour la lecture
+        MIFAREReader = MFRC522()
 
-    def init_Gpio():
-        GPIO.setmode(GPIO.BOARD)
-	GPIO.setwarnings(False)
-    	GPIO.cleanup()
+        #Détection de la présence d'une carte
+        (status,TagType) = MIFAREReader.MFRC522_Request(MIFAREReader.PICC_REQIDL)
 
-    def main():
+        #if status == MIFAREReader.MI_OK:
+        #    print("Card detected")
+        (status,backData) = MIFAREReader.MFRC522_Anticoll()
 
+        if status == MIFAREReader.MI_OK:
+            #print ("Card Number: "+str(backData[0])+","+str(backData[1])+","+str(backData[2])+","+str(backData[3])+","+str(backData[4]))
+            MIFAREReader.AntennaOff()
+            reading=False
+            return str(backData[0])+str(backData[1])+str(backData[2])+str(backData[3])+str(backData[4])
 
-    	try: 
-            init_Gpio()
-            #display.lcd_init()
-            lcd =  display.LcdDisplay()
-	    thr = thread.start_new_thread(printDateToDisplay, ())
-	    Message = "Attente carte"	
+def Main():
+    
+    try:
+	#Création d'une instance pour gérer la lecture du fichier d'accès
+    	fichier = access_file.AccessFile()
+    	
+	#Boucle de lecture
+	while True:
+    	    cardId = ReadNFC()
+	    debug("Carte lue : " + cardId) 
+            
+	    test = fichier.SearchCardId(cardId)
+            if test == True:
+        	print "Accès Autorisé"
+		debug("Carte autorisée : " + cardId)
+    	    else:
+        	print "Non autorisé"
+		debug("Carte refusée :" + cardId)
+	    time.sleep(2)
 
-	    #Boucle qui lit et affiche les actions
-	    while True:
-	        cardId=nfc.ReadNfc()
-	        Message = "Carte Lue"
-  	        logging.info("carte lue %s\n", cardId)
-     
-        except KeyboardInterrupt:
-            GPIO.cleanup()
-	    pass
-        GPIO.cleanup()
-    	displayTime=False
+    except KeyboardInterrupt:
+        #GPIO.cleanup()
+        pass
+    GPIO.cleanup()
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    Main()
