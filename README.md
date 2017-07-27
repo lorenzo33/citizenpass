@@ -7,3 +7,5 @@ par l'ACIFOP.
 
 Ce projet porte sur la mise en oeuvre d'un système d'accès à des services
 réservés aux citoyens via un système RFID.
+
+Ce dépôt ne contient que le code pour la gestion des bornes
