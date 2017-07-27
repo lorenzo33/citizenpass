@@ -34,25 +34,23 @@ class AccessFile(object):
             card_code=series[index]["fields"]["code"]
             card_stat=series[index]["fields"]["statut"]
         
-	    borne.Debug(card_code)
-	    borne.Debug(card_stat)
+	    #borne.Debug(card_code)
+	    #borne.Debug(card_stat)
 	    #print "card_code lu : %s" % card_code
 	    #print "card_stat lu : %s" % card_stat
 	
 	    if card_code==CardTag:
 	        if card_stat == 1:
             	    #print "Carte(uid) :%s - valide : %s" % (card_code, card_stat)
-	    	    msg = "Carte(uid)" + card_code + " - valide"
-		    borne.Debug(msg)
+	    	    #borne.Debug("AccessControl : uid carte (" + card_code + ") valide")
 		    self.access = True
                 else:
             	    #print "Carte(uid) :%s - non valide : %s" % (card_code, card_stat)
-	    	    msg = "Carte(uid)" + card_code + " - non valide"
-		    borne.Debug(msg)
+	    	    borne.Debug("AccesControl : uid carte (" + card_code + ") non valide")
 		    self.access = False
 	    else:
 	        #print "Carte inconnue"
-	        borne.Debug("carte inconue")
+	        #borne.Debug("AccessControl : uid carte (" + card_code + ") inconnu")
 		self.acces = False
 
         return self.access

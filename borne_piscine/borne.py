@@ -86,18 +86,18 @@ def Main():
 	#Boucle de lecture
 	while True:
     	    cardId = ReadNFC()
-	    Debug("Carte lue : " + cardId) 
+	    Debug("ReadNFC : lecture carte, uid (" + cardId + ")") 
             
 	    test = fichier.SearchCardId(cardId)
             if test == True:
         	print "Accès Autorisé"
-		Debug("Carte autorisée : " + cardId)
+		Debug("Borne : carte autorisée, uid (" + cardId + ")")
 		LedBlink('green')
     	    else:
         	print "Non autorisé"
-		Debug("Carte refusée :" + cardId)
+		Debug("Borne : carte non autorisée/inconnue, uid (" + cardId + ")")
 		LedBlink('red')
-	    time.sleep(2)
+	    time.sleep(1)
 
     except KeyboardInterrupt:
         #GPIO.cleanup()
