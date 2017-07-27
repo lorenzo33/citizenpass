@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 #!/usr/bin/python
 
 #-------------------------------------------------------------------------------
@@ -18,60 +18,71 @@ import nfc
 import logging
 
 import thread
+import threading
 import time
 
 import RPi.GPIO as GPIO
 
-# Initialisation des variables
-DEBUG = True
-VERBOSE = True
+class Borne(threadin.Thread):
 
-if(DEBUG):
-    logging.basicConfig(format='%(asctime)s %(message)s', filename='borne.log', level=logging.DEBUG)
+    # Initialisation des variables
+    DEBUG = True
+    VERBOSE = True
+
+    if(self.DEBUG):
+        logging.basicConfig(format='%(asctime)s %(message)s', filename='borne.log', level=logging.DEBUG)
+
+    def __init__(self):
+
+    	global displayTime, Message
+    	self.displayTime = True
+	self.lcd = display.LcdDisplay() 	    
+
+
+
 
 def debug(message):
-    logging.debug(message)
+        logging.debug(message)
 
-def onScreen(message):
-    if(VERBOSE):
-        print(message)
+    def onScreen(message):
+        if(VERBOSE):
+            print(message)
 
-def printDateToDisplay():
-    while True:
-        if displayTime!=True:
-            thread.exit()
-        display.lcdWriteFirstLine(time.strftime("%d/%m/%Y %H:%M:%S", time.localtime()))
-        time.sleep(1)
-	display.lcdWriteFirstLine(" ")
+    def printDateToDisplay():
+        while True:
+            if displayTime!=True:
+                thread.exit()
+        	lcd.lcdWriteFirstLine(time.strftime("%d/%m/%Y %H:%M:%S", time.localtime()))
+		lcd.lcdWriteSecondLine(Message)
+        	time.sleep(1)
+		lcd.Clear()
 
-def init_Gpio():
-    GPIO.setmode(GPIO.BOARD)
+    def init_Gpio():
+        GPIO.setmode(GPIO.BOARD)
+	GPIO.setwarnings(False)
+    	GPIO.cleanup()
 
-def main():
+    def main():
 
-    global displayTime
-    displayTime = True
-    
-    GPIO.setwarnings(False)
-    GPIO.cleanup()
-    
-    try: 
-        init_Gpio()
-        display.lcd_init()
-        thr = thread.start_new_thread(printDateToDisplay, ())
-	
-	#Boucle qui lit et affiche les actions
-	while True:
-	    #display.lcdWriteSecondLine("En attente carte")
-            cardId=nfc.ReadNfc()
-	    #display.lcdWriteSecondLine(cardId)
-  	    logging.info("carte lue %s\n", cardId)
+
+    	try: 
+            init_Gpio()
+            #display.lcd_init()
+            lcd =  display.LcdDisplay()
+	    thr = thread.start_new_thread(printDateToDisplay, ())
+	    Message = "Attente carte"	
+
+	    #Boucle qui lit et affiche les actions
+	    while True:
+	        cardId=nfc.ReadNfc()
+	        Message = "Carte Lue"
+  	        logging.info("carte lue %s\n", cardId)
      
-    except KeyboardInterrupt:
+        except KeyboardInterrupt:
+            GPIO.cleanup()
+	    pass
         GPIO.cleanup()
-	pass
-    GPIO.cleanup()
-    displayTime=False
+    	displayTime=False
 
 if __name__ == "__main__":
     main()
