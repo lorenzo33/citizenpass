@@ -15,7 +15,7 @@ class AccessFile(object):
             with open(self.pathfile, 'r') as fic:
                 self.data = fic.read()
         except :
-            borne.debug('Erreur de lecture du fichier')
+            borne.Debug('Erreur de lecture du fichier')
             exit(1)
 
     # Fonction qui recherche la chaine passée en paramètre et retourne True
@@ -34,8 +34,8 @@ class AccessFile(object):
             card_code=series[index]["fields"]["code"]
             card_stat=series[index]["fields"]["statut"]
         
-	    borne.debug(card_code)
-	    borne.debug(card_stat)
+	    borne.Debug(card_code)
+	    borne.Debug(card_stat)
 	    #print "card_code lu : %s" % card_code
 	    #print "card_stat lu : %s" % card_stat
 	
@@ -43,16 +43,16 @@ class AccessFile(object):
 	        if card_stat == 1:
             	    #print "Carte(uid) :%s - valide : %s" % (card_code, card_stat)
 	    	    msg = "Carte(uid)" + card_code + " - valide"
-		    borne.debug(msg)
+		    borne.Debug(msg)
 		    self.access = True
                 else:
             	    #print "Carte(uid) :%s - non valide : %s" % (card_code, card_stat)
 	    	    msg = "Carte(uid)" + card_code + " - non valide"
-		    borne.debug(msg)
+		    borne.Debug(msg)
 		    self.access = False
 	    else:
 	        #print "Carte inconnue"
-	        borne.debug("carte inconue")
+	        borne.Debug("carte inconue")
 		self.acces = False
 
         return self.access

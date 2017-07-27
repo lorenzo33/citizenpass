@@ -19,19 +19,24 @@ from MFRC522 import *
 import access_file
 import time
 import logging
+import RPi.GPIO as GPIO
 
 #Activation des logs de débuggage
 DEBUG=True
 #Activation de l'affichage standard
 VERBOSE=False
 
+# Broche pour l'affichage
+LED_GREEN = 38
+LED_RED = 40
+
 if(DEBUG):
     logging.basicConfig(format='%(asctime)s %(message)s',filename='borne.log', level=logging.DEBUG)
 
-def debug(message):
+def Debug(message):
     logging.debug(message)
 
-def onScreen(message):
+def OnScreen(message):
     if(VERBOSE):
         print(message)
 
@@ -54,24 +59,44 @@ def ReadNFC():
             reading=False
             return str(backData[0])+str(backData[1])+str(backData[2])+str(backData[3])+str(backData[4])
 
+def InitGpio():
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(LED_GREEN, GPIO.OUT)
+    GPIO.setup(LED_RED, GPIO.OUT)
+
+def LedBlink(led_color):
+    if led_color == 'red':
+        GPIO.output(LED_RED, True)
+	time.sleep(2)
+	GPIO.output(LED_RED, False)
+    if led_color == 'green':
+	GPIO.output(LED_GREEN, True)
+	time.sleep(2)
+	GPIO.output(LED_GREEN, False)
+
 def Main():
     
     try:
 	#Création d'une instance pour gérer la lecture du fichier d'accès
     	fichier = access_file.AccessFile()
-    	
+	
+	#Initialisation des entrées/sorties du raspberry
+	InitGpio()
+	    	
 	#Boucle de lecture
 	while True:
     	    cardId = ReadNFC()
-	    debug("Carte lue : " + cardId) 
+	    Debug("Carte lue : " + cardId) 
             
 	    test = fichier.SearchCardId(cardId)
             if test == True:
         	print "Accès Autorisé"
-		debug("Carte autorisée : " + cardId)
+		Debug("Carte autorisée : " + cardId)
+		LedBlink('green')
     	    else:
         	print "Non autorisé"
-		debug("Carte refusée :" + cardId)
+		Debug("Carte refusée :" + cardId)
+		LedBlink('red')
 	    time.sleep(2)
 
     except KeyboardInterrupt:
