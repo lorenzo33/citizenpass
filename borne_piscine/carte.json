@@ -1,3 +1,0 @@
-[{"model": "gestion.carte", "pk": 1, "fields": {"code": "17617514816241", "date_delivrance": "2017-05-17", "date_mise_opposition": null, "statut": 2, "porteur": 1}}, {"model": "gestion.carte", "pk": 2, "fields": {"code": "224452727205", "date_delivrance": "2017-05-17", "date_mise_opposition": "2017-05-17", "statut": 1, "porteur": 1}}]
-
-
