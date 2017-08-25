@@ -15,7 +15,7 @@ import time
 
 # Definition des constantes pour la connexion GPIO => LCD 
 LCD_RS = 37
-LCD_E  = 35
+LCD_EN  = 35
 LCD_D4 = 33 
 LCD_D5 = 31
 LCD_D6 = 29
@@ -38,21 +38,20 @@ E_DELAY = 0.00005
 # Déclaration de la classe lcd pour la gestion de l'afficheur
 ###################################################################
 class lcd(object):
-    def __init__(self,rs,en,d4,d5,d6,d7,backlight):
+    def __init__(self):
 	
 	#Initialisation des variables
-	self._rs = rs
-	self._en = en
-	self._d4 = d4
-	self._d5 = d5
-	self._d6 = d6
-	self._d7 = d7
-	self._backlight = backlight
+	self.rs = LCD_RS
+	self.en = LCD_EN
+	self.d4 = LCD_D4
+	self.d5 = LCD_D5
+	self.d6 = LCD_D6
+	self.d7 = LCD_D7
+	self.backlight = LED_ON
 
 	GPIO.setmode(GPIO.BOARD)     # Use pin numbers 
-	
 	#Initialise les branches GPIO en sortie
-	for pin in (rs,en,d4,d5,d6,d7,backlight):
+	for pin in (self.rs,self.en,self.d4,self.d5,self.d6,self.d7,self.backlight):
 	    GPIO.setup(pin, GPIO.OUT)
 	self.lcd_clear()
 
@@ -83,6 +82,17 @@ class lcd(object):
 	for i in range(LCD_WIDTH):
     	    self.lcd_byte(ord(message[i]),LCD_CHR)
 
+
+    #Fonction qui affiche un message sur la première ligne
+    def lcd_FirstLine(self,text,style):
+    	self.lcd_byte(LCD_LINE_1, LCD_CMD)
+	self.lcd_string(text, style)
+
+    #Fonction qui affiche un message sur la 2ème ligne
+    def lcd_SecondLine(self,text, style):
+	self.lcd_byte(LCD_LINE_2, LCD_CMD)
+	self.lcd_string(text, style)
+
     #Fonction qui traite les données envoyées
     def lcd_byte(self,bits, mode):
         # Send byte to data pins
@@ -90,48 +100,48 @@ class lcd(object):
 	# mode = True  for character
 	# False for command
 
-	GPIO.output(self._rs, mode) # RS
+	GPIO.output(self.rs, mode) # RS
 
 	# High bits
-	GPIO.output(self._d4, False)
-	GPIO.output(self._d5, False)
-	GPIO.output(self._d6, False)
-	GPIO.output(self._d7, False)
+	GPIO.output(self.d4, False)
+	GPIO.output(self.d5, False)
+	GPIO.output(self.d6, False)
+	GPIO.output(self.d7, False)
 	
 	if bits&0x10==0x10:
-	    GPIO.output(self._d4, True)
+	    GPIO.output(self.d4, True)
 	if bits&0x20==0x20:
-	    GPIO.output(self._d5, True)
+	    GPIO.output(self.d5, True)
 	if bits&0x40==0x40:
-	    GPIO.output(self._d6, True)
+	    GPIO.output(self.d6, True)
 	if bits&0x80==0x80:
-	    GPIO.output(self._d7, True)
+	    GPIO.output(self.d7, True)
 
 	# Toggle 'Enable' pin
 	time.sleep(E_DELAY)    
-	GPIO.output(self._en, True)  
+	GPIO.output(self.en, True)  
 	time.sleep(E_PULSE)
-	GPIO.output(self._en, False)  
+	GPIO.output(self.en, False)  
 	time.sleep(E_DELAY)      
 
 	# Low bits
-	GPIO.output(self._d4, False)
-	GPIO.output(self._d5, False)
-	GPIO.output(self._d6, False)
-	GPIO.output(self._d7, False)
+	GPIO.output(self.d4, False)
+	GPIO.output(self.d5, False)
+	GPIO.output(self.d6, False)
+	GPIO.output(self.d7, False)
 	
 	if bits&0x01==0x01:
-	    GPIO.output(self._d4, True)
+	    GPIO.output(self.d4, True)
 	if bits&0x02==0x02:
-	    GPIO.output(self._d5, True)
+	    GPIO.output(self.d5, True)
 	if bits&0x04==0x04:
-	    GPIO.output(self._d6, True)
+	    GPIO.output(self.d6, True)
 	if bits&0x08==0x08:
-	    GPIO.output(self._d7, True)
+	    GPIO.output(self.d7, True)
 
 	# Toggle 'Enable' pin
 	time.sleep(E_DELAY)    
-	GPIO.output(self._en, True)  
+	GPIO.output(self.en, True)  
 	time.sleep(E_PULSE)
-	GPIO.output(self._en, False)  
+	GPIO.output(self.en, False)  
 	time.sleep(E_DELAY)

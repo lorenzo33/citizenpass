@@ -17,6 +17,7 @@
 #from access_file import AccessFile
 from MFRC522 import *
 import access_file
+import lcd_display
 import time
 import logging
 import RPi.GPIO as GPIO
@@ -27,8 +28,9 @@ DEBUG=True
 VERBOSE=False
 
 # Broche pour l'affichage
-LED_GREEN = 38
-LED_RED = 40
+LED_GREEN = 36
+LED_RED = 38
+LED_BLUE = 40
 
 if(DEBUG):
     logging.basicConfig(format='%(asctime)s %(message)s',filename='borne.log', level=logging.DEBUG)
@@ -60,9 +62,20 @@ def ReadNFC():
             return str(backData[0])+str(backData[1])+str(backData[2])+str(backData[3])+str(backData[4])
 
 def InitGpio():
+    #Initialisation du mode de fonctionnement du circuit GPIO
     GPIO.setmode(GPIO.BOARD)
+    #Initialisation des variables
     GPIO.setup(LED_GREEN, GPIO.OUT)
+    GPIO.PWM(LED_GREEN, 10)
+    GPIO.setup(LED_GREEN, False)
+
     GPIO.setup(LED_RED, GPIO.OUT)
+    GPIO.PWM(LED_RED, 10)
+    GPIO.setup(LED_RED, False)
+
+    GPIO.setup(LED_BLUE, GPIO.OUT)
+    GPIO.PWM(LED_BLUE, 10)
+    GPIO.setup(LED_BLUE, False)
 
 def LedBlink(led_color):
     if led_color == 'red':
@@ -82,22 +95,38 @@ def Main():
 	
 	#Initialisation des entrées/sorties du raspberry
 	InitGpio()
+
+	#Initialisation de l'afficheur
+	afficheur = lcd_display.lcd()
+
+	#Obtention de l'adresse IP
+	addip = fichier.GetIpAddress('eth0')
+	print "Adresse ip : %s" % addip
+
+	#Affichage de l'ip
+	if str(addip) == "192.168.70.104":
+	    GPIO.PWM(LED_BLUE, 10)
+	    GPIO.output(LED_BLUE, True)
 	    	
 	#Boucle de lecture
 	while True:
+
     	    cardId = ReadNFC()
 	    Debug("ReadNFC : lecture carte, uid (" + cardId + ")") 
             
 	    test = fichier.SearchCardId(cardId)
             if test == True:
-        	print "Accès Autorisé"
+	        print "Accès Autorisé"
 		Debug("Borne : carte autorisée, uid (" + cardId + ")")
 		LedBlink('green')
+		afficheur.lcd_string("PASS : AUTORISE", 2)
     	    else:
         	print "Non autorisé"
 		Debug("Borne : carte non autorisée/inconnue, uid (" + cardId + ")")
 		LedBlink('red')
+		afficheur.lcd_string("PASS : INTERDIT", 2)
 	    time.sleep(1)
+	    afficheur.lcd_clear()
 
     except KeyboardInterrupt:
         #GPIO.cleanup()
