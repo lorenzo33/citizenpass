@@ -18,6 +18,7 @@
 from MFRC522 import *
 import access_file
 import lcd_display
+import configparser
 import time
 import logging
 import RPi.GPIO as GPIO
@@ -61,6 +62,22 @@ def ReadNFC():
             reading=False
             return str(backData[0])+str(backData[1])+str(backData[2])+str(backData[3])+str(backData[4])
 
+def ReadConfigFile():
+    fichier = 'config.ini'
+
+    #Création d'une instance de la classe
+    config = configparser.ConfigParser()
+    config.read(fichier)
+
+    #Boucle qui parcourt les sections
+    for section in config.sections():
+        #Boucle qui parcourt les clés
+	for key in config[section]:
+	    if section == 'borne':
+		if key == 'adresse_ip':
+		    valeur = config[section][key]
+		    return valeur
+    
 def InitGpio():
     #Initialisation du mode de fonctionnement du circuit GPIO
     GPIO.setmode(GPIO.BOARD)
@@ -100,11 +117,18 @@ def Main():
 	afficheur = lcd_display.lcd()
 
 	#Obtention de l'adresse IP
+	time.sleep(2)
 	addip = fichier.GetIpAddress('eth0')
-	print "Adresse ip : %s" % addip
+	print "Adresse IP (eth0) : %s" % addip
+        Debug("GetIpAddresse : %s" % addip)
+
+	#On récupère l'adresse ip du fichier de config
+	ip_borne = ReadConfigFile()
+        print "Adresse IP (ini) : %s" % ip_borne
+	Debug("ReadConfigFile : %s" % ip_borne)
 
 	#Affichage de l'ip
-	if str(addip) == "192.168.70.104":
+	if str(addip) == ip_borne:
 	    GPIO.PWM(LED_BLUE, 10)
 	    GPIO.output(LED_BLUE, True)
 	    	
@@ -129,9 +153,11 @@ def Main():
 	    afficheur.lcd_clear()
 
     except KeyboardInterrupt:
-        #GPIO.cleanup()
+        Debug("KeyboardInterrupt : arrêt ctrl+c")
+	#GPIO.cleanup()
         pass
     GPIO.cleanup()
+    Debug("GPIO.cleanup : réinitialisation du GPIO") 
 
 if __name__ == '__main__':
     Main()
