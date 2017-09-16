@@ -81,6 +81,10 @@ def ReadConfigFile():
 def InitGpio():
     #Initialisation du mode de fonctionnement du circuit GPIO
     GPIO.setmode(GPIO.BOARD)
+    
+    #On désactive les messages d'erreur
+    GPIO.setwarnings(False)
+
     #Initialisation des variables
     GPIO.setup(LED_GREEN, GPIO.OUT)
     GPIO.PWM(LED_GREEN, 10)

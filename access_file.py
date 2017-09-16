@@ -12,7 +12,7 @@ class AccessFile(object):
 	self.access = False
 	self.pathfile = "carte.json"
 	self.data = " "
-	self.IpBorne = self.GetIpAddress('eth0')  # '192.168.0.110'
+	self.IpBorne = self.GetIpAddress('eth0')
 	print "Adresse ip borne : %s" % self.IpBorne
 	self.ReadAccessFile()
 
